@@ -79,7 +79,7 @@ This project is a comprehensive Revolving Fund Management System developed for E
 ### Prerequisites
 
 - Visual Studio 2019 or newer
-- .NET Core 3.1 or newer
+- The committed application targets .NET Core 2.0, which is out of support. A newer installed runtime does not automatically satisfy this target.
 - SQL Server 2016 or newer
 
 ### Setup Steps
@@ -87,8 +87,8 @@ This project is a comprehensive Revolving Fund Management System developed for E
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/tugcantopaloglu/tez-dss.git
-   cd tez-dss
+   git clone https://github.com/tugcantopaloglu/eu-finance-system-dotnetcore.git
+   cd eu-finance-system-dotnetcore
    ```
 
 2. **Open in Visual Studio**
@@ -100,18 +100,9 @@ This project is a comprehensive Revolving Fund Management System developed for E
    - Right-click on the solution in Solution Explorer
    - Select "Restore NuGet Packages"
 
-4. **Configure Database Connection**
+4. **Review Database Configuration**
 
-   - Open `appsettings.json` and update the database connection string:
-
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "Server=YOUR_SERVER;Database=YOUR_DB;User Id=YOUR_USER;Password=YOUR_PASSWORD;"
-     }
-   }
-   ```
-
+   The current `Startup.cs` registers `donersermayeContext` without passing a connection string. Its `OnConfiguring` implementation is in `DonerSermaye/Models/Data/donersermayeContext.cs`. Adding a `DefaultConnection` key to `appsettings.json` alone does not redirect that context. Review the existing connection setup, use a dedicated local test database, and externalize credentials as part of a separately tested modernization before deploying.
 5. **Apply Database Migrations**
 
    - Open Package Manager Console
@@ -120,6 +111,18 @@ This project is a comprehensive Revolving Fund Management System developed for E
 6. **Run the Application**
    - Press F5 or click the "Start" button in Visual Studio
 
+## Current build and runtime status
+
+The committed project targets `netcoreapp2.0`, EF Core 2.0.2, and ASP.NET Core 2.0.6. These are legacy versions, not a current supported production baseline. Building from the repository root:
+
+```sh
+dotnet build DonerSermaye.sln --configuration Release
+dotnet list DonerSermaye/DonerSermaye.csproj package --vulnerable --include-transitive
+```
+
+A .NET 10 SDK restored and compiled the original solution successfully. The build reported an out-of-support framework warning, existing MailKit/ASP.NET/.NET runtime security advisories, and a source warning about the context's connection string. This is compilation evidence only. The built application could not launch on the validation host because the .NET Core 2.0 runtime was absent; .NET 6/8/9/10 runtimes do not satisfy that requirement by default.
+
+No database connection, schema migration, email delivery, authentication flow, financial transaction, or production deployment was exercised. Do not infer those capabilities or security guarantees from the successful build. A runtime/framework migration requires compatible EF/schema changes and integration tests against a controlled database; it was not performed as part of this documentation correction.
 ## Usage
 
 After installation, the system provides different interfaces based on user roles:
